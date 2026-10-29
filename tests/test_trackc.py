@@ -80,3 +80,12 @@ def test_general_api_with_affine_system_multiple_rhs(prob, tmp_path):
     io.save_fixed(tmp_path / "s.npz", A, prob.G, prob.b)
     A2, G2, b2 = io.load_fixed(tmp_path / "s.npz")
     assert abs(A2 - A).max() == 0 and (G2 != prob.G).nnz == 0
+
+
+def test_adaptive_aaa_resolves_a_resonance():
+    from trackc.aaa import adaptive_sample
+    f = lambda k: 1.0 / (k - (2.0 + 0.05j)) + 0.3 / (k - (3.1 + 0.2j)) + 0.1 * k
+    ks, vals, model = adaptive_sample(f, 1.0, 4.0, tol=1e-4)
+    grid = np.linspace(1.0, 4.0, 777)
+    assert np.max(np.abs(model(grid) - f(grid))) < 2e-3 * np.max(np.abs(vals))
+    assert len(ks) < 25
