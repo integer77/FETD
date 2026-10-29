@@ -1,4 +1,4 @@
-"""Synthetic bowtie-like test problem: graded box, PEC bowtie halves plus wire tip, Si half-space, impedance outer boundary.
+"""Synthetic TEST FIXTURE (not part of the solver): a bowtie-like problem: graded box, PEC bowtie halves plus wire tip, Si half-space, impedance outer boundary.
 
 Units are dimensionless (box edge ~ 1). A(k) = K - k^2 M_eps - i k B, complex symmetric, PEC edges eliminated.
 """

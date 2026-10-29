@@ -62,3 +62,21 @@ def test_sweep_refactors_only_when_needed(prob):
     assert [p.refactored for p in pts] == [True, False, False, True]
     assert all(p.converged for p in pts)
     assert sw.factorizations == 2
+
+
+def test_general_api_with_affine_system_multiple_rhs(prob, tmp_path):
+    from trackc import maxwell_system, MixedPrecisionSolver, io
+    rng = np.random.default_rng(1)
+    b = np.stack([prob.b, rng.standard_normal(prob.n_dof) + 0j], axis=1)
+    sysm = maxwell_system(prob.K, prob.M, prob.B, prob.G, b)
+    s = MixedPrecisionSolver(sysm)
+    k = k_of(1.0)
+    res = s.solve(k)
+    assert res.converged and res.x.shape == b.shape
+    A = sysm.A(k)
+    assert np.linalg.norm(A @ res.x - b) / np.linalg.norm(b) < 1e-9
+    res2 = s.solve(k * 1.02)
+    assert res2.converged and s.factorizations == 1
+    io.save_fixed(tmp_path / "s.npz", A, prob.G, prob.b)
+    A2, G2, b2 = io.load_fixed(tmp_path / "s.npz")
+    assert abs(A2 - A).max() == 0 and (G2 != prob.G).nnz == 0
